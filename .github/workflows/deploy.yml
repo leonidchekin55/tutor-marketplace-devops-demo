@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: pages-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -55,3 +55,9 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Smoke check the deployed site
+        env:
+          SITE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          curl --fail --silent --show-error --retry 10 --retry-delay 10 --retry-all-errors "$SITE_URL" -o /tmp/site.html
+          grep -Fq '<title>КодСтарт — программирование с интересом</title>' /tmp/site.html
